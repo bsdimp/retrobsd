@@ -144,3 +144,85 @@ void pic32_ioconf()
     fclose(fp);
 }
 #endif
+
+#if ARCH_I86
+void i86_ioconf()
+{
+    register struct device *dp, *mp;
+    FILE *fp;
+    int i;
+
+    fp = fopen("ioconf.c", "w");
+    if (fp == 0) {
+        perror("ioconf.c");
+        exit(1);
+    }
+    fprintf(fp, "#include \"sys/types.h\"\n");
+    fprintf(fp, "#include \"sys/kconfig.h\"\n\n");
+    fprintf(fp, "#define C (char *)\n\n");
+
+    /* print controller initialization structures */
+    for (dp = dtab; dp != 0; dp = dp->d_next) {
+        if (dp->d_type == SERVICE)
+            continue;
+        fprintf(fp, "extern struct driver %sdriver;\n", dp->d_name);
+    }
+    fprintf(fp, "\nstruct conf_ctlr conf_ctlr_init[] = {\n");
+    fprintf(fp, "   /* driver,\t\tunit,\taddr,\t\tpri,\tflags */\n");
+    for (dp = dtab; dp != 0; dp = dp->d_next) {
+        if (dp->d_type != CONTROLLER)
+            continue;
+        if (dp->d_drive != UNKNOWN) {
+            printf("can't specify drive for %s%s\n",
+                dp->d_name, wnum(dp->d_unit));
+            continue;
+        }
+        if (dp->d_unit == UNKNOWN || dp->d_unit == QUES)
+            dp->d_unit = 0;
+        fprintf(fp,
+               "    { &%sdriver,\t%d,\tC 0x%08x,\t%d,\t0x%x },\n",
+            dp->d_name, dp->d_unit, dp->d_addr, dp->d_pri,
+            dp->d_flags);
+    }
+    fprintf(fp, "    { 0 }\n};\n");
+
+    /* print devices connected to other controllers */
+    fprintf(fp, "\nstruct conf_device conf_device_init[] = {\n");
+    fprintf(fp,
+       "   /* driver,\t\tctlr driver,\tunit,\tctlr,\tdrive,\tflags,\tpins */\n");
+    for (dp = dtab; dp != 0; dp = dp->d_next) {
+        if (dp->d_type == CONTROLLER || dp->d_type == SERVICE)
+            continue;
+
+        mp = dp->d_conn;
+        fprintf(fp, "    { &%sdriver,\t", dp->d_name);
+        if (mp) {
+            fprintf(fp, "&%sdriver,\t%d,\t%d,\t",
+                mp->d_name, dp->d_unit, mp->d_unit);
+        } else {
+            fprintf(fp, "0,\t\t%d,\t0,\t", dp->d_unit);
+        }
+        fprintf(fp, "%d,\t0x%x,\t", dp->d_drive, dp->d_flags);
+        if (dp->d_npins > 0) {
+            fprintf(fp, "{");
+            for (i=dp->d_npins-1; i>=0; i--) {
+                int bit = dp->d_pins[i] & 0xff;
+                int port = dp->d_pins[i] >> 8;
+                if (bit > 15 || port < 1 || port > 7) {
+                    printf("R%c%u: invalid pin name\n", 'A'+port-1, bit);
+                    exit(1);
+                }
+                fprintf(fp, "0x%x%x", port, bit);
+                if (i > 0)
+                    fprintf(fp, ",");
+            }
+            fprintf(fp, "}");
+        } else
+            fprintf(fp, "{0}");
+        fprintf(fp, " },\n");
+    }
+    fprintf(fp, "    { 0 }\n};\n");
+    service_ioconf(fp);
+    fclose(fp);
+}
+#endif

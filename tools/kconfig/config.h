@@ -128,6 +128,7 @@ struct config {
 int     arch;
 char    *archname;
 #define ARCH_PIC32      1
+#define ARCH_I86        2
 
 /*
  * For each architecture, a set of CPU's may be specified as supported.
@@ -187,6 +188,7 @@ char    *devtoname(dev_t);
 void    init_dev(struct device *);
 int     yyparse(void);
 void    pic32_ioconf(void);
+void    i86_ioconf(void);
 void    makefile(void);
 void    headers(void);
 void    swapconf(void);

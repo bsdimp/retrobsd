@@ -82,8 +82,13 @@ usage:  fputs("usage: kconfig [-gp] sysname\n", stderr);
         pic32_ioconf();
         break;
 
+    case ARCH_I86:
+        i86_ioconf();
+        break;
+
     default:
         printf("Specify architecture, e.g. ``architecture pic32''\n");
+        printf("Specify architecture, e.g. ``architecture i86''\n");
         exit(1);
     }
     makefile();             /* build Makefile */
