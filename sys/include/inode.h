@@ -196,7 +196,7 @@ int closei (struct inode *ip, int flag);
  */
 struct inode *namei (struct nameidata *ndp);
 
-enum uio_rw;
+/* enum uio_rw; */
 int rdwri (enum uio_rw rw, struct inode *ip, caddr_t base, int len,
     off_t offset, int ioflg, int *aresid);
 
