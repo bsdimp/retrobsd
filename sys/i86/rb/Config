@@ -1,0 +1,37 @@
+#
+# Custom board with UART console
+# ==============================
+# Console on UART1.
+#
+# To build the kernel, use:
+#   cd sys/x86/rb
+#   kconfig Config
+#   make clean
+#   make
+#
+# Format of this file is described on page:
+# http://retrobsd.org/wiki/doku.php/doc/kconfig
+#
+architecture    "i86"
+cpu             "I8086"                     # Processor variant
+board           "RB100"                     # Board type
+ldscript        "rb/script.ld"              # Linker script
+
+# Root filesystem at /dev/wd0a, swap at /dev/wd0b
+config          unix    root on wd0a
+                        swap on wd0b
+
+controller	rbbus0
+
+# Serial UART ports
+device          uart0 at rbbus0
+device          uart1 at rbbus0
+
+# Console options
+options         "CONS_MAJOR=UART_MAJOR"     # UART device
+options         "CONS_MINOR=0"              # /dev/tty0
+
+options		"NO_UCB_METER"
+
+# RB100RD51 controller card
+device          wd0     at rbbus0

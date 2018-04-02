@@ -1,0 +1,5 @@
+#
+# List of block devices and majors
+#
+wd      0	# wd controller
+fd      1       # fd controller
