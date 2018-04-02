@@ -24,7 +24,7 @@ swap (blkno, coreaddr, count, rdflg)
     register struct buf *bp;
     int s;
 
-//printf ("swap (%u, %08x, %d, %s)\n", blkno, coreaddr, count, rdflg ? "R" : "W");
+/* printf ("swap (%u, %08x, %d, %s)\n", blkno, coreaddr, count, rdflg ? "R" : "W"); */
 #ifdef UCB_METER
     if (rdflg) {
         cnt.v_kbin += (count + 1023) / 1024;
