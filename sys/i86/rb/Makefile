@@ -18,14 +18,10 @@ AS              = as86
 CC              = bcc ${DEBUG} -0 -ansi -Dconst=
 CPP             = bcc -E
 LD              = ld86
-LDFLAGS         = -nostdlib -T ../${LDSCRIPT} -Wl,-Map=$(basename $@).map
+LDFLAGS         = 
 SIZE            = size86
 OBJCOPY		= objcopy86
 OBJDUMP         = objdump86
-
-ifneq (${MIPS_GCC_FORMAT},)
-    LDFLAGS     += -Wl,--oformat=${MIPS_GCC_FORMAT}
-endif
 
 # sources are located via $S relative to the compilation directory
 S               = ../..
@@ -90,10 +86,7 @@ SYSTEM_DEP      = Makefile ioconf.c machine sys .deps ${SYSTEM_OBJ}
 SYSTEM_LD_HEAD  = sh ../newvers.sh > vers.c; ${CC} $(CFLAGS) -c vers.c; rm -f $@
 SYSTEM_LD       = -@echo ${LD} ${LDFLAGS} '$${SYSTEM_OBJ}' vers.o -o $@; \
                   ${LD} ${LDFLAGS} ${SYSTEM_OBJ} vers.o -o $@
-SYSTEM_LD_TAIL  = ${SIZE} $@; \
-                  $(OBJCOPY) -O ihex --change-addresses=0x80000000 $@ $(basename $@).hex; \
-                  $(OBJCOPY) -O binary -R .boot -R .config $@ $(basename $@).bin; \
-                  $(OBJDUMP) -d -S $@ > $(basename $@).dis
+SYSTEM_LD_TAIL  = ${SIZE} $@
 
 unix: unix.elf
 
@@ -117,9 +110,6 @@ reconfig ioconf.c: Config ../../../tools/kconfig/kconfig
 	../../../tools/kconfig/kconfig Config
 	$(MAKE) clean
 	rm -f *.hex
-
-load:   unix.elf
-	pic32prog unix.hex
 
 machine:
 	ln -s .. $@
