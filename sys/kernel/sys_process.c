@@ -114,11 +114,24 @@ ok:
     /* one version causes a trace-trap */
     case PT_STEP:
         /* Use Status.RP bit to indicate a single-step request. */
+#ifdef __mips__
         u.u_frame [FRAME_STATUS] |= ST_RP;
+#else
+	/* XXX what to do */
+#endif
         /* FALL THROUGH TO ... */
     case PT_CONTINUE:
+#ifdef __mips__
         if ((int)ipc.ip_addr != 1)
             u.u_frame [FRAME_PC] = (int)ipc.ip_addr;
+#elif defined(__BCC__)
+        if ((int)ipc.ip_addr != 1) {
+		/* XXX what to do */
+            u.u_frame [FRAME_IP] = (int)ipc.ip_addr;
+            u.u_frame [FRAME_SS] = (int)ipc.ip_addr;
+	}
+#else
+#endif
         if (ipc.ip_data > NSIG)
             goto error;
         u.u_procp->p_ptracesig = ipc.ip_data;
