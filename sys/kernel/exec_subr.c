@@ -102,10 +102,17 @@ void exec_setupstack(unsigned entryaddr, struct exec_params *epp)
     ucp = (char *)((unsigned)topp - roundup(epp->envbc + epp->argbc,NBPW)); /* arg string space */
     envp = (char **)(ucp - (epp->envc+1)*NBPW); /* Make place for envp[...], +1 for the 0 */
     argp = envp - (epp->argc+1)*NBPW;           /* Make place for argv[...] */
+#ifdef __mips__
     u.u_frame [FRAME_SP] = (int)(argp-16);
     u.u_frame [FRAME_R4] = epp->argc;           /* $a0 := argc */
     u.u_frame [FRAME_R5] = (int)argp;           /* $a1 := argp */
     u.u_frame [FRAME_R6] = (int)envp;           /* $a2 := env */
+#elif defined(__PCC__)
+    /* u.u_frame [FRAME_SS] = ???? */
+    u.u_frame [FRAME_SP] = (int)(argp-16);
+    /* XXX more -- check calling convention */
+#else
+#endif
     *topp = argp;                               /* for /bin/ps */
 
     /*
@@ -136,7 +143,13 @@ void exec_setupstack(unsigned entryaddr, struct exec_params *epp)
         panic("exec check");
     }
 
+#ifdef __mips__
     u.u_frame [FRAME_PC] = entryaddr;
+#elif defined(__BCC__)
+    u.u_frame [FRAME_CS] = entryaddr;
+    u.u_frame [FRAME_IP] = entryaddr;
+#else
+#endif
     DEBUG("Setting up new PC=%#x\n", entryaddr);
 
     /*
@@ -369,6 +382,7 @@ void exec_clear(struct exec_params *epp)
     /*
      * Clear registers.
      */
+#if __mips__
     u.u_frame [FRAME_R1] = 0;           /* $at */
     u.u_frame [FRAME_R2] = 0;           /* $v0 */
     u.u_frame [FRAME_R3] = 0;           /* $v1 */
@@ -396,6 +410,16 @@ void exec_clear(struct exec_params *epp)
     u.u_frame [FRAME_LO] = 0;
     u.u_frame [FRAME_HI] = 0;
     u.u_frame [FRAME_GP] = 0;
+#elif defined(__BCC__)
+    /* AX, FR, SS, SP, CS, IP, ES and DS are special */
+    u.u_frame [FRAME_BX] = 0;
+    u.u_frame [FRAME_CX] = 0;
+    u.u_frame [FRAME_DX] = 0;
+    u.u_frame [FRAME_SI] = 0;
+    u.u_frame [FRAME_DI] = 0;
+    u.u_frame [FRAME_BP] = 0;
+#else
+#endif
 
     execsigs (u.u_procp);
 
