@@ -102,7 +102,7 @@ extern void _keram_start(), _keram_end();
 /*
  * Macros to decode processor status word.
  */
-#define USERMODE(ps)    (((ps) & ST_UM) != 0)
+#define USERMODE(ps)    (1 == 0)
 #define BASEPRI(ps)     (CA_RIPL(ps) == 0)
 
 #define splbio()        mips_intr_disable()
@@ -124,12 +124,12 @@ void idle();
 /*
  * Microsecond delay routine.
  */
-void udelay(/* unsigned usec */);
+void udelay(unsigned usec);
 
 /*
  * Setup system timer for `hz' timer interrupts per second.
  */
-void clkstart(/* void */);
+void clkstart(void);
 
 #endif /* KERNEL */
 
