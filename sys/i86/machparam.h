@@ -100,19 +100,19 @@ extern void _keram_start(), _keram_end();
 #include "machine/io.h"
 
 /*
- * Macros to decode processor status word.
+ * Macros to decode processor status word. XXX need to fix
  */
 #define USERMODE(ps)    (1 == 0)
-#define BASEPRI(ps)     (CA_RIPL(ps) == 0)
+#define BASEPRI(ps)     0
 
-#define splbio()        mips_intr_disable()
-#define spltty()        mips_intr_disable()
-#define splclock()      mips_intr_disable()
-#define splhigh()       mips_intr_disable()
-#define splnet()        mips_intr_enable()
-#define splsoftclock()  mips_intr_enable()
-#define spl0()          mips_intr_enable()
-#define splx(s)         mips_intr_restore(s)
+#define splbio()        0
+#define spltty()        0
+#define splclock()      0
+#define splhigh()       0
+#define splnet()        0
+#define splsoftclock()  0
+#define spl0()          0
+#define splx(s)
 
 #define noop()          asm("nop")
 
